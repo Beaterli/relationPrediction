@@ -20,7 +20,7 @@ class SpGAT(nn.Module):
 
         """
         super(SpGAT, self).__init__()
-        self.dropout = dropout
+        self.dropout = dropout  # 防止出现过拟合
         self.dropout_layer = nn.Dropout(self.dropout)
         self.attentions = [SpGraphAttentionLayer(num_nodes, nfeat,
                                                  nhid,
@@ -140,8 +140,13 @@ class SpKBGATModified(nn.Module):
             Corpus_, batch_inputs, self.entity_embeddings, self.relation_embeddings,
             edge_list, edge_type, edge_embed, edge_list_nhop, edge_type_nhop)
 
-        mask_indices = torch.unique(batch_inputs[:, 2]).cuda()
-        mask = torch.zeros(self.entity_embeddings.shape[0]).cuda()
+        if CUDA:
+            mask_indices = torch.unique(batch_inputs[:, 2]).cuda()
+            mask = torch.zeros(self.entity_embeddings.shape[0]).cuda()
+        else:
+            mask_indices = torch.unique(batch_inputs[:, 2])
+            mask = torch.zeros(self.entity_embeddings.shape[0])
+
         mask[mask_indices] = 1.0
 
         entities_upgraded = self.entity_embeddings.mm(self.W_entities)
@@ -196,14 +201,18 @@ class SpKBGATConvOnly(nn.Module):
         self.convKB = ConvKB(self.entity_out_dim_1 * self.nheads_GAT_1, 3, 1,
                              self.conv_out_channels, self.drop_conv, self.alpha_conv)
 
+        #self.capseE = CapseE(self.entity_out_dim_1 * self.nheads_GAT_1, 3, 1,self.conv_out_channels, self.drop_conv, self.alpha_conv)
+
     def forward(self, Corpus_, adj, batch_inputs):
         conv_input = torch.cat((self.final_entity_embeddings[batch_inputs[:, 0], :].unsqueeze(1), self.final_relation_embeddings[
             batch_inputs[:, 1]].unsqueeze(1), self.final_entity_embeddings[batch_inputs[:, 2], :].unsqueeze(1)), dim=1)
         out_conv = self.convKB(conv_input)
+        #out_conv = self.capseE(conv_input)
         return out_conv
 
     def batch_test(self, batch_inputs):
         conv_input = torch.cat((self.final_entity_embeddings[batch_inputs[:, 0], :].unsqueeze(1), self.final_relation_embeddings[
             batch_inputs[:, 1]].unsqueeze(1), self.final_entity_embeddings[batch_inputs[:, 2], :].unsqueeze(1)), dim=1)
         out_conv = self.convKB(conv_input)
+        #out_conv = self.capseE(conv_input)
         return out_conv

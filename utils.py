@@ -55,8 +55,11 @@ def GAT_Loss(train_indices, valid_invalid_ratio):
     x = source_embeds + relation_embeds - tail_embeds
     neg_norm = torch.norm(x, p=2, dim=1)
 
-    y = torch.ones(int(args.valid_invalid_ratio)
-                   * len_pos_triples).cuda()
+    #gpu->cpu
+    if CUDA:
+        y = torch.ones(int(args.valid_invalid_ratio) * len_pos_triples).cuda()
+    else:
+        y = torch.ones(int(args.valid_invalid_ratio) * len_pos_triples)
     loss = gat_loss_func(pos_norm, neg_norm, y)
     return loss
 

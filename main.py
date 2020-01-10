@@ -82,6 +82,7 @@ def parse_args():
 
 
 args = parse_args()
+#print(args)
 # %%
 
 
@@ -156,7 +157,10 @@ def batch_gat_loss(gat_loss_func, train_indices, entity_embed, relation_embed):
     x = source_embeds + relation_embeds - tail_embeds
     neg_norm = torch.norm(x, p=1, dim=1)
 
-    y = -torch.ones(int(args.valid_invalid_ratio_gat) * len_pos_triples).cuda()
+    if CUDA:
+        y = -torch.ones(int(args.valid_invalid_ratio_gat) * len_pos_triples).cuda()
+    else:
+        y = -torch.ones(int(args.valid_invalid_ratio_gat) * len_pos_triples)
 
     loss = gat_loss_func(pos_norm, neg_norm, y)
     return loss
@@ -357,7 +361,10 @@ def evaluate_conv(args, unique_entities):
     model_conv.load_state_dict(torch.load(
         '{0}conv/trained_{1}.pth'.format(args.output_folder, args.epochs_conv - 1)))
 
-    model_conv.cuda()
+    #gpu->cpu
+    if CUDA:
+        model_conv.cuda()
+
     model_conv.eval()
     with torch.no_grad():
         Corpus_.get_validation_pred(args, model_conv, unique_entities)

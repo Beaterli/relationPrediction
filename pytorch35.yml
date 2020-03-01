@@ -1,6 +1,6 @@
 name: pytorch35
 channels:
-  - pytorch
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/
   - defaults
 dependencies:
   - autopep8=1.3.4=py35_0
@@ -93,4 +93,4 @@ dependencies:
   - wheel=0.31.1=py35_0
   - xz=5.2.4=h14c3975_4
   - zlib=1.2.11=h7b6447c_3
-prefix: /home/deepak/miniconda3/envs/pytorch35
+prefix: /home/env/miniconda3/envs/pytorch35
